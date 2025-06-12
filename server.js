@@ -1,11 +1,9 @@
 import express from 'express';
 
 // Node 18+ provides a global fetch implementation
-const API_KEY = process.env.WORKFLOWAI_API_KEY;
-if (!API_KEY) {
-  console.error('WORKFLOWAI_API_KEY is required');
-  process.exit(1);
-}
+const API_KEY =
+  process.env.WORKFLOWAI_API_KEY ||
+  'wai-yS7LWhHODAVtQAb4_sD880sAU2rzKjnxpBQDj1PmBww';
 
 const app = express();
 app.use(express.json());
@@ -42,10 +40,10 @@ app.post('/swot', async (req, res) => {
       return;
     }
 
-    const { output } = await response.json();
-    res.json(output);
+    const { task_output } = await response.json();
+    res.json(task_output);
   } catch (error) {
-    console.error('Failed to run :', error);
+    console.error('Failed to generate analysis:', error);
     res.status(500).json({ error: 'Failed to generate analysis' });
   }
 });

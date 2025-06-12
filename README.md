@@ -18,8 +18,10 @@ npm start
 
 Le champ texte permet de saisir le nom d'une entreprise. Lorsque vous cliquez sur **Analyser**, le serveur envoie une requête REST au service WorkflowAI pour générer l'analyse SWOT et affiche les forces, faiblesses, opportunités et menaces retournées.
 
-Le service nécessite une clé API WorkflowAI. Vous pouvez la fournir via la variable d'environnement `WORKFLOWAI_API_KEY` avant de démarrer le serveur. Par exemple :
+Le service utilise une clé API WorkflowAI intégrée. Vous pouvez toutefois en
+fournir une autre via la variable d'environnement `WORKFLOWAI_API_KEY` avant de
+démarrer le serveur. Par exemple :
 
 ```bash
-WORKFLOWAI_API_KEY=wai-yS7LWhHODAVtQAb4_sD880sAU2rzKjnxpBQDj1PmBww npm start
+WORKFLOWAI_API_KEY=ma-cle-personnelle npm start
 ```
