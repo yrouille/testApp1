@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WorkflowAI SWOT Analysis</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 2em; }
     .error { color: red; }
@@ -13,58 +11,49 @@
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/javascript">
-    const e = React.createElement;
-    function App() {
-      const [company, setCompany] = React.useState('');
-      const [responseData, setResponseData] = React.useState(null);
-      const [error, setError] = React.useState(null);
-      const handleSubmit = async (ev) => {
-        ev.preventDefault();
-        setError(null);
-        setResponseData(null);
-        try {
-          const res = await fetch('https://run.workflowai.com/v1/@yannrouillegmailcom/tasks/generate-a-swot-analysis/schemas/1/run', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer wai-yS7LWhHODAVtQAb4_sD880sAU2rzKjnxpBQDj1PmBww'
-            },
-            body: JSON.stringify({
-              task_input: { company_name: company },
-              version: 'production',
-              use_cache: 'auto'
-            })
-          });
-          if (!res.ok) {
-            throw new Error('HTTP ' + res.status);
-          }
-          const data = await res.json();
-          setResponseData(data);
-        } catch (err) {
-          setError(err.message);
-        }
-      };
-      return (
-        e('div', null,
-          e('form', { onSubmit: handleSubmit },
-            e('label', null, "Nom de l'entreprise: ",
-              e('input', {
-                value: company,
-                onChange: ev => setCompany(ev.target.value),
-                required: true
-              })
-            ),
-            e('button', { type: 'submit' }, 'Obtenir l\'analyse SWOT')
-          ),
-          error && e('p', { className: 'error' }, error),
-          responseData && e('pre', null, JSON.stringify(responseData, null, 2))
-        )
-      );
+  <h1>WorkflowAI SWOT Analysis</h1>
+  <form id="swot-form">
+    <label>Nom de l'entreprise:
+      <input type="text" id="company-input" required>
+    </label>
+    <button type="submit">Obtenir l'analyse SWOT</button>
+  </form>
+  <p id="error" class="error" style="display:none;"></p>
+  <pre id="response" style="display:none;"></pre>
+  <script>
+  const form = document.getElementById('swot-form');
+  const companyInput = document.getElementById('company-input');
+  const errorElem = document.getElementById('error');
+  const responseElem = document.getElementById('response');
+
+  form.addEventListener('submit', async function(ev) {
+    ev.preventDefault();
+    errorElem.style.display = 'none';
+    responseElem.style.display = 'none';
+    try {
+      const res = await fetch('https://run.workflowai.com/v1/@yannrouillegmailcom/tasks/generate-a-swot-analysis/schemas/1/run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer wai-yS7LWhHODAVtQAb4_sD880sAU2rzKjnxpBQDj1PmBww'
+        },
+        body: JSON.stringify({
+          task_input: { company_name: companyInput.value },
+          version: 'production',
+          use_cache: 'auto'
+        })
+      });
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status);
+      }
+      const data = await res.json();
+      responseElem.textContent = JSON.stringify(data, null, 2);
+      responseElem.style.display = 'block';
+    } catch (err) {
+      errorElem.textContent = err.message;
+      errorElem.style.display = 'block';
     }
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(e(App));
+  });
   </script>
 </body>
 </html>
