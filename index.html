@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WorkflowAI SWOT Analysis</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    .error { color: red; }
+    pre { background: #f4f4f4; padding: 1em; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/javascript">
+    const e = React.createElement;
+    function App() {
+      const [company, setCompany] = React.useState('');
+      const [responseData, setResponseData] = React.useState(null);
+      const [error, setError] = React.useState(null);
+      const handleSubmit = async (ev) => {
+        ev.preventDefault();
+        setError(null);
+        setResponseData(null);
+        try {
+          const res = await fetch('https://run.workflowai.com/v1/@yannrouillegmailcom/tasks/generate-a-swot-analysis/schemas/1/run', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer wai-yS7LWhHODAVtQAb4_sD880sAU2rzKjnxpBQDj1PmBww'
+            },
+            body: JSON.stringify({
+              task_input: { company_name: company },
+              version: 'production',
+              use_cache: 'auto'
+            })
+          });
+          if (!res.ok) {
+            throw new Error('HTTP ' + res.status);
+          }
+          const data = await res.json();
+          setResponseData(data);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+      return (
+        e('div', null,
+          e('form', { onSubmit: handleSubmit },
+            e('label', null, "Nom de l'entreprise: ",
+              e('input', {
+                value: company,
+                onChange: ev => setCompany(ev.target.value),
+                required: true
+              })
+            ),
+            e('button', { type: 'submit' }, 'Obtenir l\'analyse SWOT')
+          ),
+          error && e('p', { className: 'error' }, error),
+          responseData && e('pre', null, JSON.stringify(responseData, null, 2))
+        )
+      );
+    }
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(e(App));
+  </script>
+</body>
+</html>
