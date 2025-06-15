@@ -58,7 +58,8 @@ const loader = document.getElementById("loader");
     if (data.cost) info.push('Cost: '+data.cost);
     if (data.metadata) info.push('Metadata: '+JSON.stringify(data.metadata));
     if (info.length) {
-      html += `<span class="info" title="${info.join(' | ').replace(/\"/g,'&quot;')}">ℹ️</span>`;
+      const escaped = info.join(" | ").replace(/"/g, "&quot;");
+      html += `<span class="info" title="${escaped}">ℹ️</span>`;
     }
     if (!hasCategory) {
       html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
