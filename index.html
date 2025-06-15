@@ -8,6 +8,9 @@
     body { font-family: Arial, sans-serif; margin: 2em; }
     .error { color: red; }
     pre { background: #f4f4f4; padding: 1em; overflow-x: auto; }
+    .swot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1em; margin-top: 1em; }
+    .swot-card { background: #fafafa; border: 1px solid #ccc; border-radius: 8px; padding: 1em; }
+    .info { margin-left: 0.5em; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -18,18 +21,82 @@
     </label>
     <button type="submit">Obtenir l'analyse SWOT</button>
   </form>
+  <label for="history-select">Historique:
+    <select id="history-select"></select>
+  </label>
   <p id="error" class="error" style="display:none;"></p>
-  <pre id="response" style="display:none;"></pre>
+  <div id="result-container"></div>
   <script>
   const form = document.getElementById('swot-form');
   const companyInput = document.getElementById('company-input');
   const errorElem = document.getElementById('error');
-  const responseElem = document.getElementById('response');
+  const resultContainer = document.getElementById('result-container');
+  const historySelect = document.getElementById('history-select');
+
+  function displayResult(data) {
+    const swot = data.swot || data.task_output || data;
+    const keys = ['strengths','weaknesses','opportunities','threats'];
+    let html = '<div class="swot-grid">';
+    let hasCategory = false;
+    keys.forEach(k => {
+      const items = swot[k];
+      if (Array.isArray(items)) {
+        hasCategory = true;
+        html += `<div class="swot-card"><h3>${k.charAt(0).toUpperCase()+k.slice(1)}</h3><ul>`;
+        items.forEach(it => { html += `<li>${it}</li>`; });
+        html += '</ul></div>';
+      }
+    });
+    html += '</div>';
+    const info = [];
+    if (data.version) info.push('Version: '+data.version);
+    if (data.duration) info.push('Duration: '+data.duration);
+    if (data.cost) info.push('Cost: '+data.cost);
+    if (data.metadata) info.push('Metadata: '+JSON.stringify(data.metadata));
+    if (info.length) {
+      html += `<span class="info" title="${info.join(' | ').replace(/\"/g,'&quot;')}">ℹ️</span>`;
+    }
+    if (!hasCategory) {
+      html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+    resultContainer.innerHTML = html;
+  }
+
+  function saveToHistory(name, data) {
+    const history = JSON.parse(localStorage.getItem('swotHistory') || '[]');
+    history.unshift({name, data});
+    if (history.length > 10) history.pop();
+    localStorage.setItem('swotHistory', JSON.stringify(history));
+  }
+
+  function updateHistoryOptions() {
+    const history = JSON.parse(localStorage.getItem('swotHistory') || '[]');
+    historySelect.innerHTML = '<option value="">--Historique--</option>';
+    history.forEach((item, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = item.name;
+      historySelect.appendChild(opt);
+    });
+  }
+
+  historySelect.addEventListener('change', () => {
+    const idx = historySelect.value;
+    if (idx === '') return;
+    const history = JSON.parse(localStorage.getItem('swotHistory') || '[]');
+    const item = history[idx];
+    if (item) {
+      displayResult(item.data);
+      companyInput.value = item.name;
+    }
+  });
+
+  updateHistoryOptions();
 
   form.addEventListener('submit', async function(ev) {
     ev.preventDefault();
     errorElem.style.display = 'none';
-    responseElem.style.display = 'none';
+    resultContainer.innerHTML = '';
     try {
       const res = await fetch('https://run.workflowai.com/v1/@yannrouillegmailcom/tasks/generate-a-swot-analysis/schemas/1/run', {
         method: 'POST',
@@ -47,8 +114,9 @@
         throw new Error('HTTP ' + res.status);
       }
       const data = await res.json();
-      responseElem.textContent = JSON.stringify(data, null, 2);
-      responseElem.style.display = 'block';
+      displayResult(data);
+      saveToHistory(companyInput.value, data);
+      updateHistoryOptions();
     } catch (err) {
       errorElem.textContent = err.message;
       errorElem.style.display = 'block';
