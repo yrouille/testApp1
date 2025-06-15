@@ -8,6 +8,20 @@
     body { font-family: Arial, sans-serif; margin: 2em; }
     .error { color: red; }
     pre { background: #f4f4f4; padding: 1em; overflow-x: auto; }
+    .loader {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1em auto;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -19,17 +33,20 @@
     <button type="submit">Obtenir l'analyse SWOT</button>
   </form>
   <p id="error" class="error" style="display:none;"></p>
+  <div id="loader" class="loader"></div>
   <pre id="response" style="display:none;"></pre>
   <script>
   const form = document.getElementById('swot-form');
   const companyInput = document.getElementById('company-input');
   const errorElem = document.getElementById('error');
+  const loaderElem = document.getElementById('loader');
   const responseElem = document.getElementById('response');
 
   form.addEventListener('submit', async function(ev) {
     ev.preventDefault();
     errorElem.style.display = 'none';
     responseElem.style.display = 'none';
+    loaderElem.style.display = 'block';
     try {
       const res = await fetch('https://run.workflowai.com/v1/@yannrouillegmailcom/tasks/generate-a-swot-analysis/schemas/1/run', {
         method: 'POST',
@@ -52,6 +69,8 @@
     } catch (err) {
       errorElem.textContent = err.message;
       errorElem.style.display = 'block';
+    } finally {
+      loaderElem.style.display = 'none';
     }
   });
   </script>
